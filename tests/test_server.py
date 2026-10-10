@@ -173,3 +173,16 @@ def test_rate_limit_rejects_sixth_distinct_query():
     assert calls == 5
     assert results[-1]["status"] == "unknown"
     assert results[-1]["reason"] == "rate_limited"
+
+
+def test_malformed_domain_field_fails_closed():
+    output = check(
+        "example.com",
+        httpx.Response(
+            200,
+            json={"domain": None, "status": "available", "available": True, "flow": "instant"},
+            headers={"content-type": "application/json"},
+        ),
+    )
+    assert output["status"] == "unknown"
+    assert output["reason"] == "invalid_upstream_response"
