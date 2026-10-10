@@ -12,7 +12,7 @@ The GitHub repository is a product proof point and developer entry point, **not 
 
 **Topics / GitHub 标签（建议）：**
 
-\`mcp\`, \`mcp-server\`, \`domain-search\`, \`domain-availability\`, \`ai-agent\`, \`domain-registration\`, \`usdt\`, \`domainroc\`
+`mcp`, `mcp-server`, `domain-search`, `domain-availability`, `ai-agent`, `domain-registration`, `usdt`, `domainroc`
 
 > The GitHub About description, Topics and Homepage are repository settings, **not code files**. Setting them in this document does not automatically update GitHub's About panel. Apply separately in Settings/About if administrative editing is unavailable.
 
