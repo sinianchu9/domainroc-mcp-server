@@ -96,7 +96,10 @@ def result(
 
 def interpret(domain: str, payload: object) -> dict:
     """Fail closed for malformed, blocked, restricted, or manual-review results."""
-    if not isinstance(payload, dict) or payload.get("domain", "").lower() != domain:
+    if not isinstance(payload, dict):
+        return result(domain, reason="invalid_upstream_response")
+    reported_domain = payload.get("domain")
+    if not isinstance(reported_domain, str) or reported_domain.lower() != domain:
         return result(domain, reason="invalid_upstream_response")
     state = payload.get("status")
     available = payload.get("available")
