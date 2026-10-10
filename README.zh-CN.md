@@ -10,24 +10,24 @@
 
 ## 功能范围
 
-仅提供一个工具：\`check_domain(domain)\`。
+仅提供一个工具：`check_domain(domain)`。
 
-- 使用网站现有的 \`GET /api/public/domains/check\`，不是单独研发一套注册商查询系统。
-- 返回状态：\`available\`（可注册）、\`unavailable\`（确认不可注册）或 \`unknown\`（无法确认）。
+- 使用网站现有的 `GET /api/public/domains/check`，不是单独研发一套注册商查询系统。
+- 返回状态：`available`（可注册）、`unavailable`（确认不可注册）或 `unknown`（无法确认）。
 - 查询失败、受限、需要人工审核等情况一律**不能冒充可注册**。
-- 有可靠报价时返回 \`price_usdt\`，仅为预览价格，实际金额以下单时的最终复核为准。
-- \`purchase_url\` 是官网域名查询页，不是订单、自动支付链接；用户需要自行在官网查询、确认并购买。
+- 有可靠报价时返回 `price_usdt`，仅为预览价格，实际金额以下单时的最终复核为准。
+- `purchase_url` 是官网域名查询页，不是订单、自动支付链接；用户需要自行在官网查询、确认并购买。
 
 ## 本地安装
 
 要求 Python 3.11 或更新版本：
 
-\`\`\`bash
+```bash
 git clone https://github.com/sinianchu9/domainroc-mcp-server.git
 cd domainroc-mcp-server
 python -m pip install -e .
 domainroc-mcp
-\`\`\`
+```
 
 运行使用本地 **stdio** MCP 协议，不对公网监听端口。
 
@@ -35,7 +35,7 @@ domainroc-mcp
 
 支持本地 stdio MCP 的客户端可参考以下配置（不同客户端的配置入口可能不同）：
 
-\`\`\`json
+```json
 {
   "mcpServers": {
     "domainroc": {
@@ -44,7 +44,7 @@ domainroc-mcp
     }
   }
 }
-\`\`\`
+```
 
 然后向 AI 提问：
 
@@ -65,10 +65,10 @@ domainroc-mcp
 
 ## 测试
 
-\`\`\`bash
+```bash
 python -m pip install -e ".[dev]"
 pytest -q
-\`\`\`
+```
 
 测试使用模拟 HTTP 响应，不会产生实际订单或付款。
 
