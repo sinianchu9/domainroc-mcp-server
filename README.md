@@ -12,23 +12,23 @@ An open-source **Model Context Protocol (MCP) server** that lets AI assistants c
 
 | MCP tool | Behavior |
 | --- | --- |
-| \`check_domain(domain)\` | Queries a single domain using DomainRoc's existing public read-only API; returns a confirmed status, an available first-year USDT quote if reliable, and the official website search URL. |
+| `check_domain(domain)` | Queries a single domain using DomainRoc's existing public read-only API; returns a confirmed status, an available first-year USDT quote if reliable, and the official website search URL. |
 
-- Uses **the same public search route as the website**: \`GET https://www.domainroc.com/api/public/domains/check?domain=...\`.
-- Availability is \`available\`, \`unavailable\`, or \`unknown\`. Blocked, restricted, manual-review, failed, and ambiguous results **must not be misrepresented as available**.
-- \`price_usdt\` is a **preview**, not a binding checkout price. Recheck it at checkout.
-- The \`purchase_url\` points to DomainRoc's domain search page, **not** a pre-filled order or payment session. Users manually search and buy on the official site.
+- Uses **the same public search route as the website**: `GET https://www.domainroc.com/api/public/domains/check?domain=...`.
+- Availability is `available`, `unavailable`, or `unknown`. Blocked, restricted, manual-review, failed, and ambiguous results **must not be misrepresented as available**.
+- `price_usdt` is a **preview**, not a binding checkout price. Recheck it at checkout.
+- The `purchase_url` points to DomainRoc's domain search page, **not** a pre-filled order or payment session. Users manually search and buy on the official site.
 
 ## Quick start — local stdio
 
 Python 3.11+:
 
-\`\`\`bash
+```bash
 git clone https://github.com/sinianchu9/domainroc-mcp-server.git
 cd domainroc-mcp-server
 python -m pip install -e .
 domainroc-mcp
-\`\`\`
+```
 
 The process communicates over MCP **stdio**. It does not open a public port, and it normally prints nothing until an MCP client connects.
 
@@ -36,7 +36,7 @@ The process communicates over MCP **stdio**. It does not open a public port, and
 
 Example client configuration (field names vary by client):
 
-\`\`\`json
+```json
 {
   "mcpServers": {
     "domainroc": {
@@ -45,7 +45,7 @@ Example client configuration (field names vary by client):
     }
   }
 }
-\`\`\`
+```
 
 Restart your MCP client, then ask:
 
@@ -55,7 +55,7 @@ The example domain is illustrative, not a claim about live inventory. The client
 
 ## Example response shape
 
-\`\`\`json
+```json
 {
   "domain": "sample-project.com",
   "status": "unknown",
@@ -68,27 +68,27 @@ The example domain is illustrative, not a claim about live inventory. The client
   "reason": "upstream_unavailable",
   "note": "No confirmed availability or price. Search and checkout on the official website."
 }
-\`\`\`
+```
 
 This is a **synthetic error-format example**, not a live search result.
 
 ## Guardrails / safety
 
 - Only one tool; **no domain registration, ordering, USDT transfer, wallet action, DNS modification, or user session access**.
-- Input must be a valid ASCII domain name (internationalized names can be supplied in their \`xn--\`/IDNA form); no arbitrary URLs.
+- Input must be a valid ASCII domain name (internationalized names can be supplied in their `xn--`/IDNA form); no arbitrary URLs.
 - Fixed HTTPS host and endpoint; redirects and environment proxy inheritance disabled.
 - Built-in **per-process** budget: max 5 outbound checks/minute, 200 checks/rolling 24h, at most 2 in-flight requests, and 45-second confirmed-result cache.
-- 8-second network timeout; failures become \`unknown\`, never \`available\`.
+- 8-second network timeout; failures become `unknown`, never `available`.
 - **Local stdio only** in this preview. The built-in budget is **not** a distributed abuse-prevention solution. Do not expose this server directly to the Internet without a separate authenticated gateway, shared quotas, logging, and security review.
 
 See [SECURITY.md](SECURITY.md).
 
 ## Development and tests
 
-\`\`\`bash
+```bash
 python -m pip install -e ".[dev]"
 pytest -q
-\`\`\`
+```
 
 Tests use HTTP mocks and never submit real registrations or payments.
 
