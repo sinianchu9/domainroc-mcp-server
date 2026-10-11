@@ -1,6 +1,6 @@
 # DomainRoc MCP Server — AI 域名查询与 USDT 注册报价
 
-[English](README.md) · [安全说明](SECURITY.md) · [DomainRoc 域名查询](https://www.domainroc.com/zh/domains)
+[English](README.md) · [安全说明](SECURITY.md) · [DomainRoc AI Agent 预览](https://www.domainroc.com/zh/ai-agent-domain-search)
 
 > **实验预览 · 仅限只读 · 不支持 AI 自动购买**
 
@@ -51,6 +51,20 @@ domainroc-mcp
 > 请用 DomainRoc 检查 example.com 是否可注册。没有可靠报价就明确说明，不要编造价格。
 
 注意：发布 GitHub 项目**不代表**所有 AI 平台会自动发现或调用此工具，用户仍需通过支持 MCP 的客户端进行配置。
+
+## 一条命令运行真实 MCP 演示
+
+安装完成后，可以通过**官方 MCP Python SDK** 客户端运行只读查询演示。示例将启动本地服务、发现 `check_domain`、调用真实官网公开域名查询接口、输出结果并自动退出：
+
+```bash
+python examples/demo_stdio.py --domain example.com
+```
+
+**2026-10-11 UTC 实测：** `example.com` 返回 `unavailable`，另一测试域名在查询时返回 `available` 与 USDT 参考价，无效 URL 返回 `unknown`。详见 [带时间戳的真实演示与输出](docs/DEMO.md)。历史样本不能当作当前库存或最终购买价格。官方 SDK 的 stdio 协议测试通过，不代表所有 AI 客户端均原生兼容。
+
+**DomainRoc 官网 AI Agent 预览：** https://www.domainroc.com/zh/ai-agent-domain-search
+
+**观点文章：** https://www.domainroc.com/zh/blog/block-ai-or-build-with-it-domainroc
 
 ## 实验安全边界
 
