@@ -1,6 +1,6 @@
 # DomainRoc MCP Server — AI Domain Availability & USDT Price Lookup
 
-[简体中文](README.zh-CN.md) · [Security](SECURITY.md) · [DomainRoc Domain Search](https://www.domainroc.com/en/domains)
+[简体中文](README.zh-CN.md) · [Security](SECURITY.md) · [DomainRoc AI Agent Preview](https://www.domainroc.com/en/ai-agent-domain-search)
 
 > **Experimental · Read-only · No automated purchases**
 
@@ -52,6 +52,20 @@ Restart your MCP client, then ask:
 > Check whether example.com is available through DomainRoc. If the quote is unavailable, say so; do not invent a price.
 
 The example domain is illustrative, not a claim about live inventory. The client must support **local stdio MCP servers**; publishing this repository does **not** automatically make the tool discoverable in every AI app.
+
+## One-command real MCP demo
+
+The repository includes an independent **official MCP Python SDK** client. Once installed, it launches the stdio server, discovers `check_domain`, calls the live read-only search endpoint, prints the JSON result, and shuts down cleanly.
+
+```bash
+python examples/demo_stdio.py --domain example.com
+```
+
+**Verified 2026-10-11 (UTC):** the protocol demo returned `unavailable` for `example.com`, `available` with a time-specific USDT reference quote for a test domain, and `unknown` for an invalid URL. See [actual timestamped responses](docs/DEMO.md). These are historical observations, not a live inventory claim. This verifies MCP stdio interoperability **with the official SDK**, not AI-client-native compatibility.
+
+**DomainRoc AI Agent Preview:** https://www.domainroc.com/en/ai-agent-domain-search
+
+**Industry perspective:** https://www.domainroc.com/en/blog/block-ai-or-build-with-it-domainroc
 
 ## Example response shape
 
