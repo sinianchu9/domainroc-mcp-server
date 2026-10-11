@@ -22,7 +22,7 @@ dev = ["pytest>=8,<10"]
 domainroc-mcp = "domainroc_mcp.server:main"
 
 [project.urls]
-Homepage = "https://www.domainroc.com/en/domains"
+Homepage = "https://www.domainroc.com/en/ai-agent-domain-search"
 Repository = "https://github.com/sinianchu9/domainroc-mcp-server"
 Documentation = "https://github.com/sinianchu9/domainroc-mcp-server#readme"
 
