@@ -6,7 +6,7 @@ from decimal import Decimal, InvalidOperation
 
 import httpx
 
-SITES = {"domainroc": "https://www.domainroc.com", "namepopo": "https://namepopo.com"}
+SITES = {"domainroc": "https://www.domainroc.com", "namepopo": "https://www.namepopo.com"}
 
 
 def site_url() -> str:
