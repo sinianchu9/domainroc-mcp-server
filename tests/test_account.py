@@ -11,7 +11,7 @@ def test_no_key_means_no_account_request(monkeypatch):
     def unexpected(request): raise AssertionError("must not call upstream")
     assert asyncio.run(account_call("wallet", transport=httpx.MockTransport(unexpected)))["error"] == "connection_required"
 
-@pytest.mark.parametrize("site,host", [("domainroc", "www.domainroc.com"), ("namepopo", "namepopo.com")])
+@pytest.mark.parametrize("site,host", [("domainroc", "www.domainroc.com"), ("namepopo", "www.namepopo.com")])
 def test_fixed_account_endpoint_and_no_caller_identity(monkeypatch, site, host):
     monkeypatch.setenv("DOMAINROC_SITE", site)
     monkeypatch.setenv("DOMAINROC_AGENT_TOKEN", "droc_test-only-key")
