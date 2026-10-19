@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "domainroc-mcp-server"
-version = "0.1.0"
-description = "Read-only MCP server for DomainRoc AI domain availability and USDT registration quote lookup"
+version = "0.2.0"
+description = "MCP assistant for DomainRoc domain search, account services and USDT recharge"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
