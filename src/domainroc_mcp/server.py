@@ -1,4 +1,4 @@
-"""Single-tool, local-stdio MCP adapter for DomainRoc's public domain search."""
+"""Local stdio assistant for domain search and authorized account services."""
 
 from __future__ import annotations
 
@@ -11,20 +11,22 @@ from decimal import Decimal, InvalidOperation
 
 import httpx
 from mcp.server.fastmcp import FastMCP
+from domainroc_mcp.account import register_account_tools, site_url
 
-API_URL = "https://www.domainroc.com/api/public/domains/check"
-PURCHASE_URL = "https://www.domainroc.com/en/domains"
+API_URL = site_url() + "/api/public/domains/check"
+PURCHASE_URL = site_url() + "/en/domains"
 DOMAIN_LABEL = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
 MAX_REQUESTS_PER_MINUTE = 5
 MAX_REQUESTS_PER_DAY = 200
 CACHE_SECONDS = 45
 
 mcp = FastMCP(
-    "DomainRoc Domain Search",
+    "DomainRoc Agent",
     instructions=(
-        "Experimental read-only domain lookup. Never claim a domain is available "
-        "when status is unknown. Price is a non-binding preview; purchases require "
-        "the user to use the official DomainRoc website."
+        "Check domain availability and manage your authorized account. Never claim "
+        "availability or payment when unconfirmed. Users complete payment on the "
+        "official checkout. Reuse recharge request IDs on retries. Credentials "
+        "are read from the local environment; never ask users to paste them in chat."
     ),
 )
 
@@ -138,6 +140,7 @@ class DomainChecker:
 
         now = time.monotonic()
         async with self._lock:
+            self._cache = {key: value for key, value in self._cache.items() if value[0] > now}
             entry = self._cache.get(domain)
             if entry is not None and entry[0] > now:
                 return {**entry[1], "cached": True}
@@ -184,7 +187,7 @@ class DomainChecker:
 _checker = DomainChecker()
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "openWorldHint": True})
 async def check_domain(domain: str) -> dict:
     """Check a single domain's confirmed availability and first-year USDT preview price.
 
@@ -193,6 +196,9 @@ async def check_domain(domain: str) -> dict:
     Does not create orders, charge accounts, or register domains.
     """
     return await _checker.check(domain)
+
+
+register_account_tools(mcp)
 
 
 def main() -> None:

@@ -1,128 +1,78 @@
-# DomainRoc MCP Server — AI Domain Availability & USDT Price Lookup
+# DomainRoc Agent MCP
 
-[简体中文](README.zh-CN.md) · [Security](SECURITY.md) · [DomainRoc AI Agent Preview](https://www.domainroc.com/en/ai-agent-domain-search)
+[简体中文](README.zh-CN.md) · [Security](SECURITY.md)
 
-> **Experimental · Read-only · No automated purchases**
+Connect an MCP-compatible AI assistant to domain search and your authorized account services. Public domain search works without an account. Account services require a connection key created in **Dashboard → Agent MCP** on a site running the account-service update.
 
-An open-source **Model Context Protocol (MCP) server** that lets AI assistants check **domain name availability** and available **USDT registration quotes** using DomainRoc's existing public domain search API. No account credentials, registrar keys, checkout automation, or changes to DomainRoc's production code.
+| Tool | What you can do | Permission |
+| --- | --- | --- |
+| `check_domain` | Check domain availability and a first-year USDT price preview | Public |
+| `get_wallet` | View available and reserved balance | Balance and billing |
+| `list_transactions` | View wallet transactions | Balance and billing |
+| `list_domains` | View your domains, expiry and renewal preferences | Domains |
+| `list_orders` | Track domain orders and payments | Orders |
+| `list_monitors` | View monitoring results and service expiry | Monitoring |
+| `get_payment_methods` | View available USDT payment networks | Balance and billing |
+| `create_recharge` | Create a recharge checkout | Recharge |
+| `get_recharge` | Track your recharge and balance credit | Recharge |
 
-**AI-ready domain search, not AI-controlled domain purchases.** When others are debating whether to block AI agents, DomainRoc is experimenting with a bounded way to work with them.
+Recharges require the user to pay at checkout. These tools cannot transfer funds, withdraw, buy or renew domains, change DNS, or grant permissions. Confirm purchases and service changes on the official website. Prices from public search are previews, not checkout commitments.
 
-## What it does
-
-| MCP tool | Behavior |
-| --- | --- |
-| `check_domain(domain)` | Queries a single domain using DomainRoc's existing public read-only API; returns a confirmed status, an available first-year USDT quote if reliable, and the official website search URL. |
-
-- Uses **the same public search route as the website**: `GET https://www.domainroc.com/api/public/domains/check?domain=...`.
-- Availability is `available`, `unavailable`, or `unknown`. Blocked, restricted, manual-review, failed, and ambiguous results **must not be misrepresented as available**.
-- `price_usdt` is a **preview**, not a binding checkout price. Recheck it at checkout.
-- The `purchase_url` points to DomainRoc's domain search page, **not** a pre-filled order or payment session. Users manually search and buy on the official site.
-
-## Quick start — local stdio
+## Connect your assistant
 
 Python 3.11+:
 
-```bash
-git clone https://github.com/sinianchu9/domainroc-mcp-server.git
-cd domainroc-mcp-server
-python -m pip install -e .
-domainroc-mcp
+```sh
+python -m pip install git+https://github.com/sinianchu9/domainroc-mcp-server.git
 ```
 
-The process communicates over MCP **stdio**. It does not open a public port, and it normally prints nothing until an MCP client connects.
-
-### Connect from an MCP-compatible AI client
-
-Example client configuration (field names vary by client):
+1. Open your account's **Agent MCP** page.
+2. Choose the permissions and expiry (up to 90 days), then create a connection key. Recharge is optional.
+3. Copy the provided settings into an AI client that supports local MCP servers. The key is shown once; do not paste it into chat or commit it to a repository.
 
 ```json
 {
   "mcpServers": {
     "domainroc": {
       "command": "domainroc-mcp",
-      "args": []
+      "env": {
+        "DOMAINROC_SITE": "domainroc",
+        "DOMAINROC_AGENT_TOKEN": "YOUR_CONNECTION_KEY"
+      }
     }
   }
 }
 ```
 
-Restart your MCP client, then ask:
+Use `DOMAINROC_SITE=namepopo` for a **separate Namepopo account and connection key**. Only these two fixed HTTPS destinations are accepted. Never reuse a connection key across sites. To use public search alone, omit `DOMAINROC_AGENT_TOKEN`.
 
-> Check whether example.com is available through DomainRoc. If the quote is unavailable, say so; do not invent a price.
+Examples: “When do my domains expire?”, “Show my available USDT balance”, “Create a 20 USDT recharge using the network I selected.”
 
-The example domain is illustrative, not a claim about live inventory. The client must support **local stdio MCP servers**; publishing this repository does **not** automatically make the tool discoverable in every AI app.
+Client setup varies. This repository provides a local stdio MCP server; it does not register automatically in AI products or expose a public port. Account functions require the new backend migration and routes to have been deployed on the chosen site; a local test does not establish production availability.
 
-## One-command real MCP demo
+## Recharge reliability
 
-The repository includes an independent **official MCP Python SDK** client. Once installed, it launches the stdio server, discovers `check_domain`, calls the live read-only search endpoint, prints the JSON result, and shuts down cleanly.
+Select a supported network using `get_payment_methods`, obtain the user's choice of amount and network, then call `create_recharge`. Supply a unique `request_id` of 8–64 letters, digits, underscores or hyphens for each intended recharge. **Reuse that same ID and parameters on every retry**, especially after a timeout. Changed parameters under the same ID are rejected. Reconnects should use existing recharge numbers rather than generating replacement orders.
 
-```bash
+A checkout URL or `payment_status` alone does not establish wallet credit. Only a populated `credited_at` from `get_recharge` confirms credit. Settlement, signatures, callbacks and once-only balance credit remain the website's existing wallet responsibility.
+
+## Limits and privacy
+
+- Keys are scoped to one account and expire; users and administrators can revoke them.
+- Servers store a key hash, never the full key. Activity records exclude keys and tool payloads.
+- Account services admit at most 30 requests per connection per minute, backed by the website database; other site limits also apply.
+- List tools support `limit` (1–100) and `offset`.
+- Public domain search retains its per-process 5/minute, 200/day budget and 45-second result cache; public search is outside account activity statistics.
+- HTTPS targets are fixed; redirects and inherited proxy settings are disabled. Network errors remain unconfirmed.
+
+## Development
+
+```sh
+uv sync --extra dev
+uv run --frozen pytest -q
 python examples/demo_stdio.py --domain example.com
 ```
 
-**Verified 2026-10-11 (UTC):** the protocol demo returned `unavailable` for `example.com`, `available` with a time-specific USDT reference quote for a test domain, and `unknown` for an invalid URL. See [actual timestamped responses](docs/DEMO.md). These are historical observations, not a live inventory claim. This verifies MCP stdio interoperability **with the official SDK**, not AI-client-native compatibility.
+Automated tests use mocked HTTP and never submit real payments or registrations. The demo performs a live public lookup only. [Historical demo evidence](docs/DEMO.md) refers to the original search release, not the new account tools.
 
-**DomainRoc AI Agent Preview:** https://www.domainroc.com/en/ai-agent-domain-search
-
-**Industry perspective:** https://www.domainroc.com/en/blog/block-ai-or-build-with-it-domainroc
-
-## Example response shape
-
-```json
-{
-  "domain": "sample-project.com",
-  "status": "unknown",
-  "available": null,
-  "price_usdt": null,
-  "currency": "USDT",
-  "purchase_url": "https://www.domainroc.com/en/domains",
-  "checked_at": "2026-10-11T00:00:00+00:00",
-  "cached": false,
-  "reason": "upstream_unavailable",
-  "note": "No confirmed availability or price. Search and checkout on the official website."
-}
-```
-
-This is a **synthetic error-format example**, not a live search result.
-
-## Guardrails / safety
-
-- Only one tool; **no domain registration, ordering, USDT transfer, wallet action, DNS modification, or user session access**.
-- Input must be a valid ASCII domain name (internationalized names can be supplied in their `xn--`/IDNA form); no arbitrary URLs.
-- Fixed HTTPS host and endpoint; redirects and environment proxy inheritance disabled.
-- Built-in **per-process** budget: max 5 outbound checks/minute, 200 checks/rolling 24h, at most 2 in-flight requests, and 45-second confirmed-result cache.
-- 8-second network timeout; failures become `unknown`, never `available`.
-- **Local stdio only** in this preview. The built-in budget is **not** a distributed abuse-prevention solution. Do not expose this server directly to the Internet without a separate authenticated gateway, shared quotas, logging, and security review.
-
-See [SECURITY.md](SECURITY.md).
-
-## Development and tests
-
-```bash
-python -m pip install -e ".[dev]"
-pytest -q
-```
-
-Tests use HTTP mocks and never submit real registrations or payments.
-
-## Why this exists
-
-**Block AI or build with it?** DomainRoc's experimental answer is to allow narrowly scoped, verifiable, user-initiated AI-assisted domain search. Responsible access controls and opposition to abusive scraping are fully compatible with useful AI agents.
-
-**English search topics:** domain MCP server, AI domain availability checker, domain registration API, domain price lookup, domain search for AI agents, USDT domain registration.
-
-**中文关键词:** 域名查询 MCP、AI 域名查询、域名注册 API、USDT 购买域名、AI Agent 域名接口。
-
-This is a technical demonstration, **not** a claim that DomainRoc offers autonomous AI domain purchasing.
-
-## Links
-
-- [DomainRoc — domain search and USDT checkout](https://www.domainroc.com/en/domains)
-- [DomainRoc 中文域名查询](https://www.domainroc.com/zh/domains)
-- [简体中文说明](README.zh-CN.md)
-- [Repository SEO & release checklist](docs/SEO.md)
-
-## License
-
-[MIT](LICENSE). No affiliation with the Model Context Protocol maintainers is implied.
+[MIT](LICENSE).

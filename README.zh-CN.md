@@ -1,106 +1,45 @@
-# DomainRoc MCP Server — AI 域名查询与 USDT 注册报价
+# DomainRoc Agent MCP
 
-[English](README.md) · [安全说明](SECURITY.md) · [DomainRoc AI Agent 预览](https://www.domainroc.com/zh/ai-agent-domain-search)
+[English](README.md) · [安全说明](SECURITY.md)
 
-> **实验预览 · 仅限只读 · 不支持 AI 自动购买**
+让您常用的 AI 助手查询域名、查看账户与服务进度，并协助充值。公开域名查询无需登录；账户功能需在已发布新版账户服务的网站中，进入 **控制台 → Agent MCP** 创建授权。
 
-这是一个开源 **MCP（Model Context Protocol）服务端**，允许支持 MCP 的 AI 助手调用 DomainRoc 原有公开查询接口，检查**域名能否注册**，在有可靠报价时显示 **USDT 首年注册参考价**，再引导用户前往官网自行下单。
+支持：域名可注册状态及参考报价、余额与账单、域名到期、域名订单、监控结果、支付网络、创建充值收银台及查询到账。购买、续费和服务变更由您在官网确认；助手不会自动转账、提现或修改域名设置。
 
-**不修改 DomainRoc 生产代码，不连接数据库，不持有注册商密钥，不碰订单和支付。**
+## 连接
 
-## 功能范围
+需要 Python 3.11+，以及支持本地 MCP 的 AI 客户端：
 
-仅提供一个工具：`check_domain(domain)`。
-
-- 使用网站现有的 `GET /api/public/domains/check`，不是单独研发一套注册商查询系统。
-- 返回状态：`available`（可注册）、`unavailable`（确认不可注册）或 `unknown`（无法确认）。
-- 查询失败、受限、需要人工审核等情况一律**不能冒充可注册**。
-- 有可靠报价时返回 `price_usdt`，仅为预览价格，实际金额以下单时的最终复核为准。
-- `purchase_url` 是官网域名查询页，不是订单、自动支付链接；用户需要自行在官网查询、确认并购买。
-
-## 本地安装
-
-要求 Python 3.11 或更新版本：
-
-```bash
-git clone https://github.com/sinianchu9/domainroc-mcp-server.git
-cd domainroc-mcp-server
-python -m pip install -e .
-domainroc-mcp
+```sh
+python -m pip install git+https://github.com/sinianchu9/domainroc-mcp-server.git
 ```
 
-运行使用本地 **stdio** MCP 协议，不对公网监听端口。
-
-### 连接 AI 客户端
-
-支持本地 stdio MCP 的客户端可参考以下配置（不同客户端的配置入口可能不同）：
+在控制台为助手选择权限与有效期（最长 90 天），创建密钥并复制连接配置到客户端。密钥只展示一次，不要发送到聊天、分享或提交至仓库。可随时撤销；充值权限默认不勾选。
 
 ```json
 {
   "mcpServers": {
     "domainroc": {
       "command": "domainroc-mcp",
-      "args": []
+      "env": {
+        "DOMAINROC_SITE": "domainroc",
+        "DOMAINROC_AGENT_TOKEN": "替换为连接密钥"
+      }
     }
   }
 }
 ```
 
-然后向 AI 提问：
+Namepopo 使用 `DOMAINROC_SITE=namepopo`，并在 Namepopo 创建独立授权。两站账户、密钥与余额互不通用。仅查询公开域名时可以不填写密钥。网站需先部署新版账户接口与迁移，本地测试不代表线上已开放。
 
-> 请用 DomainRoc 检查 example.com 是否可注册。没有可靠报价就明确说明，不要编造价格。
+可试着询问：“我的域名何时到期？”“可用余额是多少？”“按我选的支付网络创建 20 USDT 充值单。”
 
-注意：发布 GitHub 项目**不代表**所有 AI 平台会自动发现或调用此工具，用户仍需通过支持 MCP 的客户端进行配置。
+## 充值
 
-## 一条命令运行真实 MCP 演示
+先查询可用网络，由用户选择金额与网络。每次新充值使用唯一 `request_id`（8–64 位字母、数字、下划线或连字符），**超时或重试必须使用相同编号与参数**，不要另开充值单。用户在收银台付款，只有查询结果的 `credited_at` 有值才代表钱包已入账。创建充值单不等于已经付款。
 
-安装完成后，可以通过**官方 MCP Python SDK** 客户端运行只读查询演示。示例将启动本地服务、发现 `check_domain`、调用真实官网公开域名查询接口、输出结果并自动退出：
+## 管理与统计
 
-```bash
-python examples/demo_stdio.py --domain example.com
-```
+用户在一个页面管理授权和最近使用记录。管理员有独立 Agent MCP 页面，可暂停账户服务或助手充值、筛选和撤销客户授权、查看使用统计和充值到账。充值金额按实际充值单去重，公开域名查询不计入账户服务次数。
 
-**2026-10-11 UTC 实测：** `example.com` 返回 `unavailable`，另一测试域名在查询时返回 `available` 与 USDT 参考价，无效 URL 返回 `unknown`。详见 [带时间戳的真实演示与输出](docs/DEMO.md)。历史样本不能当作当前库存或最终购买价格。官方 SDK 的 stdio 协议测试通过，不代表所有 AI 客户端均原生兼容。
-
-**DomainRoc 官网 AI Agent 预览：** https://www.domainroc.com/zh/ai-agent-domain-search
-
-**观点文章：** https://www.domainroc.com/zh/blog/block-ai-or-build-with-it-domainroc
-
-## 实验安全边界
-
-- **无**自动下单、扣余额、付款、改 DNS、域名转移和账号读取能力。
-- 校验域名格式；不接受任意 URL 或自定义访问目标；仅请求固定 HTTPS 域名。
-- 禁止自动 HTTP 重定向、禁用从系统环境继承代理。
-- 单进程最多每分钟 5 次、滚动 24 小时 200 次、并发 2 次真实查询；成功结果缓存 45 秒。
-- 单次网络超时 8 秒。失败统一返回无法确认，不误导用户。
-- 只面向本地实验。**不能把本地内存限流当成公网安全防护**；要开放公网 MCP，必须另行增加授权、统一配额及网关审查。
-
-详见 [SECURITY.md](SECURITY.md)。
-
-## 测试
-
-```bash
-python -m pip install -e ".[dev]"
-pytest -q
-```
-
-测试使用模拟 HTTP 响应，不会产生实际订单或付款。
-
-## 为什么开放给 AI？
-
-**新的互联网时代，是严防死守，还是融合共生？**
-
-我们认为：阻止未经授权的滥用行为，与支持经过边界约束的 AI Agent 并不矛盾。DomainRoc 通过一个可验证、可关闭的只读实验，探索用户授权的 AI 助手如何真正使用域名查询服务。
-
-**关键词方向**：AI 域名查询、域名查询 MCP、MCP 域名注册接口、域名注册 API、USDT 域名注册、AI Agent 域名搜索。
-
-本项目只证明 AI 可以查询域名，**绝不宣传尚未实现的 AI 自动购买能力**。
-
-## 相关链接
-
-- [DomainRoc 官网域名查询](https://www.domainroc.com/zh/domains)
-- [DomainRoc 英文域名查询](https://www.domainroc.com/en/domains)
-- [English README](README.md)
-- [GitHub 中英文 SEO 设置建议](docs/SEO.md)
-
-[MIT License](LICENSE)
+密钥仅保存摘要，权限仅限当前账户；账户服务每连接每分钟最多 30 次请求。工具清单、参数、测试方法和边界见 [英文说明](README.md)。[历史协议演示](docs/DEMO.md)仅对应早期域名查询版。
