@@ -4,6 +4,8 @@
 
 Connect an MCP-compatible AI assistant to domain search and your authorized account services. Public domain search works without an account. Account services require a connection key created in **Dashboard → Agent MCP** on a site running the account-service update.
 
+The optional local adapter retains these original tools. The hosted remote service additionally provides complete individual management described below.
+
 | Tool | What you can do | Permission |
 | --- | --- | --- |
 | `check_domain` | Check domain availability and a first-year USDT price preview | Public |
@@ -16,39 +18,29 @@ Connect an MCP-compatible AI assistant to domain search and your authorized acco
 | `create_recharge` | Create a recharge checkout | Recharge |
 | `get_recharge` | Track your recharge and balance credit | Recharge |
 
-Recharges require the user to pay at checkout. These tools cannot transfer funds, withdraw, buy or renew domains, change DNS, or grant permissions. Confirm purchases and service changes on the official website. Prices from public search are previews, not checkout commitments.
+Recharges require the user to pay at checkout. The local adapter cannot transfer funds, withdraw, buy or renew domains, change DNS, or grant permissions. The hosted remote service supports individually authorized purchases, renewals and changes, with a separate balance-payment permission and ceiling. Prices from public search are previews, not checkout commitments.
 
-## Connect your assistant
+## Connect your assistant — no installation
 
-Python 3.11+:
+| Site | Remote MCP URL | Account page |
+| --- | --- | --- |
+| DomainROC | `https://www.domainroc.com/api/mcp` | [Agent MCP](https://www.domainroc.com/dashboard/agent-mcp) |
+| Namepopo | `https://www.namepopo.com/api/mcp` | [Agent MCP](https://www.namepopo.com/dashboard/agent-mcp) |
 
-```sh
-python -m pip install git+https://github.com/sinianchu9/domainroc-mcp-server.git
-```
+Add the URL in your assistant's **remote MCP** settings. Use a connection key if your client supports bearer authentication, or complete website sign-in and consent when prompted. Never put a key in the URL or a chat message.
 
-1. Open your account's **Agent MCP** page.
-2. Choose the permissions and expiry (up to 90 days), then create a connection key. Recharge is optional.
-3. Copy the provided settings into an AI client that supports local MCP servers. The key is shown once; do not paste it into chat or commit it to a repository.
+- **Codex and bearer-capable clients:** copy the URL, create a key on the account page and enter it in the client's authentication field. If a header is required, use `Authorization: Bearer YOUR_CONNECTION_KEY`. In Codex configuration use `url` and `bearer_token_env_var` or `http_headers` as documented by [Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+- **ChatGPT:** add a custom MCP with the server URL and OAuth sign-in, then select the operations on the website. ChatGPT does not accept a custom connection key for authenticated MCP; availability depends on the account's custom-MCP feature. See [official authentication guidance](https://developers.openai.com/plugins/build/auth).
+- **Grok / Grok Bot:** use New Connector → Custom, supply the URL and complete authentication. See [official connector guidance](https://docs.x.ai/grok/connectors). Exact Bot entry points depend on its client.
+- **Muse.ai:** add an MCP connection and enter the service URL and connection key. Keep the key in connection settings, never in chat.
 
-```json
-{
-  "mcpServers": {
-    "domainroc": {
-      "command": "domainroc-mcp",
-      "env": {
-        "DOMAINROC_SITE": "domainroc",
-        "DOMAINROC_AGENT_TOKEN": "YOUR_CONNECTION_KEY"
-      }
-    }
-  }
-}
-```
+The original account operations are individually authorized: view balance, wallet transactions, domains and expiry, domain orders, existing monitoring, payment networks, create recharge, and check recharge credit. Creating a recharge does not imply permission to view other wallet data. Choose a per-checkout amount ceiling (new connections default to 100 USDT), a lifetime of up to 90 days, and revoke or reduce permissions anytime. Adding permissions requires a fresh connection and consent.
 
-Use `DOMAINROC_SITE=namepopo` for a **separate Namepopo account and connection key**. Only these two fixed HTTPS destinations are accepted. Never reuse a connection key across sites. To use public search alone, omit `DOMAINROC_AGENT_TOKEN`.
+The website hosts the remote service using the official MCP SDK's stateless Streamable HTTP transport. OAuth uses PKCE, short-lived access tokens and rotating refresh tokens tied to the same revocable account connection. The original package in this repository remains available for existing local integrations; ordinary remote users do not install it.
+
+Use separate accounts and grants for the two sites. Public search is also available directly on each website without connecting an account. The authenticated remote endpoint requires a key or OAuth even for its domain-search tool.
 
 Examples: “When do my domains expire?”, “Show my available USDT balance”, “Create a 20 USDT recharge using the network I selected.”
-
-Client setup varies. This repository provides a local stdio MCP server; it does not register automatically in AI products or expose a public port. Account functions require the new backend migration and routes to have been deployed on the chosen site; a local test does not establish production availability.
 
 ## Recharge reliability
 
@@ -76,3 +68,10 @@ python examples/demo_stdio.py --domain example.com
 Automated tests use mocked HTTP and never submit real payments or registrations. The demo performs a live public lookup only. [Historical demo evidence](docs/DEMO.md) refers to the original search release, not the new account tools.
 
 [MIT](LICENSE).
+
+
+### Individual remote management
+
+The hosted remote server exposes 106 tools, including individually authorized domain, VPS, proxy, monitoring and wallet operations. Use the website permission picker to select exact actions. Balance payment is a separate permission with a per-operation ceiling; automatic renewal follows separately disclosed website rules. Sensitive credentials require fresh website verification. Every changing operation uses a stable request reference to prevent duplicate execution. The optional local adapter retains its smaller legacy tool set; use the remote URL for complete management.
+
+远程服务支持按单项授权的域名、VPS、代理、监控及钱包操作。余额付款需单独授权并设置单次上限；自动续费按另行确认的官网规则执行。敏感资料需在官网验证身份，变更操作使用固定编号防止重复执行。完整管理请使用远程服务链接，本地可选适配器保留原有精简工具。
