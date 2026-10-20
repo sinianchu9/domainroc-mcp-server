@@ -18,37 +18,27 @@ Connect an MCP-compatible AI assistant to domain search and your authorized acco
 
 Recharges require the user to pay at checkout. These tools cannot transfer funds, withdraw, buy or renew domains, change DNS, or grant permissions. Confirm purchases and service changes on the official website. Prices from public search are previews, not checkout commitments.
 
-## Connect your assistant
+## Connect your assistant — no installation
 
-Python 3.11+:
+| Site | Remote MCP URL | Account page |
+| --- | --- | --- |
+| DomainROC | `https://www.domainroc.com/api/mcp` | [Agent MCP](https://www.domainroc.com/dashboard/agent-mcp) |
+| Namepopo | `https://www.namepopo.com/api/mcp` | [Agent MCP](https://www.namepopo.com/dashboard/agent-mcp) |
 
-```sh
-python -m pip install git+https://github.com/sinianchu9/domainroc-mcp-server.git
-```
+Add the URL in your assistant's **remote MCP** settings. Use a connection key if your client supports bearer authentication, or complete website sign-in and consent when prompted. Never put a key in the URL or a chat message.
 
-1. Open your account's **Agent MCP** page.
-2. Choose the permissions and expiry (up to 90 days), then create a connection key. Recharge is optional.
-3. Copy the provided settings into an AI client that supports local MCP servers. The key is shown once; do not paste it into chat or commit it to a repository.
+- **Codex and bearer-capable clients:** copy the URL, create a key on the account page and enter it in the client's authentication field. If a header is required, use `Authorization: Bearer YOUR_CONNECTION_KEY`. In Codex configuration use `url` and `bearer_token_env_var` or `http_headers` as documented by [Codex](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
+- **ChatGPT:** add a custom MCP with the server URL and OAuth sign-in, then select the operations on the website. ChatGPT does not accept a custom connection key for authenticated MCP; availability depends on the account's custom-MCP feature. See [official authentication guidance](https://developers.openai.com/plugins/build/auth).
+- **Grok / Grok Bot:** use New Connector → Custom, supply the URL and complete authentication. See [official connector guidance](https://docs.x.ai/grok/connectors). Exact Bot entry points depend on its client.
+- **Muse.ai:** add an MCP connection and enter the service URL and connection key. Keep the key in connection settings, never in chat.
 
-```json
-{
-  "mcpServers": {
-    "domainroc": {
-      "command": "domainroc-mcp",
-      "env": {
-        "DOMAINROC_SITE": "domainroc",
-        "DOMAINROC_AGENT_TOKEN": "YOUR_CONNECTION_KEY"
-      }
-    }
-  }
-}
-```
+Each of the eight account operations is authorized separately: view balance, wallet transactions, domains and expiry, domain orders, existing monitoring, payment networks, create recharge, and check recharge credit. Creating a recharge does not imply permission to view other wallet data. Choose a per-checkout amount ceiling (new connections default to 100 USDT), a lifetime of up to 90 days, and revoke or reduce permissions anytime. Adding permissions requires a fresh connection and consent.
 
-Use `DOMAINROC_SITE=namepopo` for a **separate Namepopo account and connection key**. Only these two fixed HTTPS destinations are accepted. Never reuse a connection key across sites. To use public search alone, omit `DOMAINROC_AGENT_TOKEN`.
+The website hosts the remote service using the official MCP SDK's stateless Streamable HTTP transport. OAuth uses PKCE, short-lived access tokens and rotating refresh tokens tied to the same revocable account connection. The original package in this repository remains available for existing local integrations; ordinary remote users do not install it.
+
+Use separate accounts and grants for the two sites. Public search is also available directly on each website without connecting an account. The authenticated remote endpoint requires a key or OAuth even for its domain-search tool.
 
 Examples: “When do my domains expire?”, “Show my available USDT balance”, “Create a 20 USDT recharge using the network I selected.”
-
-Client setup varies. This repository provides a local stdio MCP server; it does not register automatically in AI products or expose a public port. Account functions require the new backend migration and routes to have been deployed on the chosen site; a local test does not establish production availability.
 
 ## Recharge reliability
 
