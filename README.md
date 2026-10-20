@@ -4,6 +4,8 @@
 
 Connect an MCP-compatible AI assistant to domain search and your authorized account services. Public domain search works without an account. Account services require a connection key created in **Dashboard → Agent MCP** on a site running the account-service update.
 
+The optional local adapter retains these original tools. The hosted remote service additionally provides complete individual management described below.
+
 | Tool | What you can do | Permission |
 | --- | --- | --- |
 | `check_domain` | Check domain availability and a first-year USDT price preview | Public |
@@ -16,7 +18,7 @@ Connect an MCP-compatible AI assistant to domain search and your authorized acco
 | `create_recharge` | Create a recharge checkout | Recharge |
 | `get_recharge` | Track your recharge and balance credit | Recharge |
 
-Recharges require the user to pay at checkout. These tools cannot transfer funds, withdraw, buy or renew domains, change DNS, or grant permissions. Confirm purchases and service changes on the official website. Prices from public search are previews, not checkout commitments.
+Recharges require the user to pay at checkout. The local adapter cannot transfer funds, withdraw, buy or renew domains, change DNS, or grant permissions. The hosted remote service supports individually authorized purchases, renewals and changes, with a separate balance-payment permission and ceiling. Prices from public search are previews, not checkout commitments.
 
 ## Connect your assistant — no installation
 
@@ -32,7 +34,7 @@ Add the URL in your assistant's **remote MCP** settings. Use a connection key if
 - **Grok / Grok Bot:** use New Connector → Custom, supply the URL and complete authentication. See [official connector guidance](https://docs.x.ai/grok/connectors). Exact Bot entry points depend on its client.
 - **Muse.ai:** add an MCP connection and enter the service URL and connection key. Keep the key in connection settings, never in chat.
 
-Each of the eight account operations is authorized separately: view balance, wallet transactions, domains and expiry, domain orders, existing monitoring, payment networks, create recharge, and check recharge credit. Creating a recharge does not imply permission to view other wallet data. Choose a per-checkout amount ceiling (new connections default to 100 USDT), a lifetime of up to 90 days, and revoke or reduce permissions anytime. Adding permissions requires a fresh connection and consent.
+The original account operations are individually authorized: view balance, wallet transactions, domains and expiry, domain orders, existing monitoring, payment networks, create recharge, and check recharge credit. Creating a recharge does not imply permission to view other wallet data. Choose a per-checkout amount ceiling (new connections default to 100 USDT), a lifetime of up to 90 days, and revoke or reduce permissions anytime. Adding permissions requires a fresh connection and consent.
 
 The website hosts the remote service using the official MCP SDK's stateless Streamable HTTP transport. OAuth uses PKCE, short-lived access tokens and rotating refresh tokens tied to the same revocable account connection. The original package in this repository remains available for existing local integrations; ordinary remote users do not install it.
 
@@ -66,3 +68,10 @@ python examples/demo_stdio.py --domain example.com
 Automated tests use mocked HTTP and never submit real payments or registrations. The demo performs a live public lookup only. [Historical demo evidence](docs/DEMO.md) refers to the original search release, not the new account tools.
 
 [MIT](LICENSE).
+
+
+### Individual remote management
+
+The hosted remote server exposes 106 tools, including individually authorized domain, VPS, proxy, monitoring and wallet operations. Use the website permission picker to select exact actions. Balance payment is a separate permission with a per-operation ceiling; automatic renewal follows separately disclosed website rules. Sensitive credentials require fresh website verification. Every changing operation uses a stable request reference to prevent duplicate execution. The optional local adapter retains its smaller legacy tool set; use the remote URL for complete management.
+
+远程服务支持按单项授权的域名、VPS、代理、监控及钱包操作。余额付款需单独授权并设置单次上限；自动续费按另行确认的官网规则执行。敏感资料需在官网验证身份，变更操作使用固定编号防止重复执行。完整管理请使用远程服务链接，本地可选适配器保留原有精简工具。
