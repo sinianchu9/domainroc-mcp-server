@@ -1,5 +1,7 @@
 # DomainRoc Agent MCP
 
+**[DomainROC](https://www.domainroc.com)** — 加密原生域名注册商：使用 USDT 注册与管理域名，支持 AI Agent 通过 MCP 直接操作。
+
 [English](README.md) · [安全说明](SECURITY.md)
 
 让您常用的 AI 助手查询域名、查看账户与服务进度，并协助充值。公开域名查询无需登录；账户功能需在已发布新版账户服务的网站中，进入 **控制台 → Agent MCP** 创建授权。

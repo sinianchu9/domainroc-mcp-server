@@ -1,5 +1,7 @@
 # DomainRoc Agent MCP
 
+**[DomainROC](https://www.domainroc.com)** — crypto-native domain registrar: register and manage domains with USDT, operable by AI agents via MCP.
+
 [简体中文](README.zh-CN.md) · [Security](SECURITY.md)
 
 Connect an MCP-compatible AI assistant to domain search and your authorized account services. Public domain search works without an account. Account services require a connection key created in **Dashboard → Agent MCP** on a site running the account-service update.
